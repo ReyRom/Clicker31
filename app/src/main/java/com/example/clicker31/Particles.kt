@@ -4,6 +4,10 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -39,7 +43,7 @@ data class Particle(
 
 @Composable
 fun ParticleAnimation(particles: MutableList<Particle>){
-
+    var invalidate by remember { mutableStateOf(false) }
     LaunchedEffect(Unit) {
         while (true){
             delay(16L)
@@ -47,28 +51,31 @@ fun ParticleAnimation(particles: MutableList<Particle>){
                 it.update()
                 it.lifetime <= 0
             }
+            invalidate = !invalidate
         }
     }
 
     val textMeasurer = rememberTextMeasurer()
     Canvas(Modifier.fillMaxSize()){
-        for (part in particles){
-            val text = textMeasurer.measure(
-                part.letter,
-                cthulhuTextStyle
-            )
+        invalidate.let {
+            for (part in particles){
+                val text = textMeasurer.measure(
+                    part.letter,
+                    cthulhuTextStyle
+                )
 
-            drawText(text,
-                color = Color(
-                    0.38f,
-                    0.96f,
-                    0.86f,
-                    part.alpha),
-                topLeft = Offset(part.x, part.y),
-                shadow = Shadow(Color.Black,
-                    Offset(5f,5f),
-                    10f)
-            )
+                drawText(text,
+                    color = Color(
+                        0.38f,
+                        0.96f,
+                        0.86f,
+                        part.alpha),
+                    topLeft = Offset(part.x, part.y),
+                    shadow = Shadow(Color.Black,
+                        Offset(5f,5f),
+                        10f)
+                )
+            }
         }
     }
 }
