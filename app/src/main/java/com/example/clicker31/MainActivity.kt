@@ -1,5 +1,6 @@
 package com.example.clicker31
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -30,11 +31,14 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -57,9 +61,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.clicker31.ui.theme.Clicker31Theme
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -82,6 +90,14 @@ fun ClickerGame(vm: GameViewModel = viewModel()){
         1 to PageData("Shop", Icons.Default.ShoppingCart)
     ) }
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        while (true){
+            delay(1000)
+            vm.onAutoClick()
+        }
+    }
+
     Clicker31Theme {
         Scaffold(modifier = Modifier.fillMaxSize(),
             topBar = {
@@ -97,7 +113,7 @@ fun ClickerGame(vm: GameViewModel = viewModel()){
                         textAlign = TextAlign.Center,
                         fontSize = 30.sp,
                         color = MaterialTheme.colorScheme.onPrimary)
-                    Text(vm.score.toString(),
+                    Text("%.2f".format(vm.score),
                         textAlign = TextAlign.Center,
                         fontSize = 30.sp,
                         color = MaterialTheme.colorScheme.onPrimary)
@@ -153,14 +169,18 @@ fun ClickerGame(vm: GameViewModel = viewModel()){
 @Composable
 fun ShopScreen(vm: GameViewModel){
     Column(Modifier.fillMaxSize()) {
-        Button({}) {
-            Text("кнопка1")
-        }
-        Button({}) {
-            Text(text = "кнопка2")
-        }
-        Button({}) {
-            Text("кнопка3")
+        vm.upgrades.forEach { (type, upgrade) ->
+            Card(Modifier.fillMaxWidth().padding(10.dp)
+                .clickable{vm.onUpgrade(upgrade)}) {
+                Text(type.title, fontSize = 25.sp,
+                    modifier = Modifier.padding(5.dp))
+                Text("${upgrade.level}lv. Значение: %.2f"
+                    .format(upgrade.currentValue()),
+                    modifier = Modifier.padding(5.dp))
+                Text("Стоимость: %.2f"
+                    .format(upgrade.currentCost()),
+                    modifier = Modifier.padding(5.dp))
+            }
         }
     }
 }
@@ -218,5 +238,28 @@ fun GameScreen(vm: GameViewModel) {
             )
         }
         ParticleAnimation(particles)
+    }
+}
+
+@Composable
+fun ApplicationLifetimeObserver(onExit:()->Unit){
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = object : DefaultLifecycleObserver{
+            override fun onStop(owner: LifecycleOwner) {
+                super.onStop(owner)
+            }
+
+            override fun onDestroy(owner: LifecycleOwner) {
+                super.onDestroy(owner)
+            }
+
+            override fun onPause(owner: LifecycleOwner) {
+                super.onPause(owner)
+            }
+        }
+
+        Unit
     }
 }
