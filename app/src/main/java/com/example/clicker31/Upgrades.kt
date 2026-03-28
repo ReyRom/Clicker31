@@ -1,5 +1,6 @@
 package com.example.clicker31
 
+import java.math.BigDecimal
 import kotlin.math.pow
 
 sealed class UpgradeType(val title: String){
@@ -11,16 +12,16 @@ sealed class UpgradeType(val title: String){
 data class Upgrade(
     val type: UpgradeType,
     val level: Int = 0,
-    val initialValue: Double,
-    val baseValue: Double,
-    val valueMultiplier: Double,
-    val baseCost: Double,
-    val costMultiplier: Double
+    val initialValue: BigDecimal,
+    val baseValue: BigDecimal,
+    val valueMultiplier: BigDecimal,
+    val baseCost: BigDecimal,
+    val costMultiplier: BigDecimal
 ){
-    fun currentCost(): Double{
+    fun currentCost(): BigDecimal{
         return baseCost * costMultiplier.pow(level)
     }
-    fun currentValue(): Double{
+    fun currentValue(): BigDecimal{
         return initialValue + baseValue * valueMultiplier.pow(level)
     }
     fun next(): Upgrade{
